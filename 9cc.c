@@ -144,13 +144,13 @@ void gen(Node *node) {
     case '+':
       printf("  add rax, rdi\n");
       break;
-   case '-':
+    case '-':
       printf("  sub rax, rdi\n");
       break;
-   case '*':
+    case '*':
       printf("  mul rdi\n");
       break;
-   case '/':
+    case '/':
       printf("  mov rdx, 0\n");
       printf("  div rdi\n");
       break;
