@@ -5,11 +5,13 @@
 
 enum {
   TK_NUM = 256,
+  TK_IDENT,
   TK_EOF,
 };
 
 enum {
   ND_NUM = 256,
+  ND_IDENT,
 };
 
 typedef struct {
@@ -25,13 +27,16 @@ typedef struct Node {
   int ty;
   struct Node *lhs;
   struct Node *rhs;
-  int val;
+  int val; // used when ty == ND_NUM
+  char name; // used when ty == ND_IDENT
 } Node;
+
+Node *code[100];
 
 Node *term();
 
-void error(int i) {
-  fprintf(stderr, "unknown char %s", tokens[i].input);
+void error(char *str) {
+  fprintf(stderr, "%s", str);
   exit(1);
 }
 
@@ -45,11 +50,19 @@ void tokenize(char *p) {
     }
 
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' ||
-        *p == '(' || *p == ')' ) {
+        *p == '(' || *p == ')' || *p == '=' || *p == ';') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       p++;
       i++;
+      continue;
+    }
+
+    if ('a' <= *p && *p <= 'z') {
+      tokens[i].ty = TK_IDENT;
+      tokens[i].input = p;
+      i++;
+      p++;
       continue;
     }
 
@@ -84,6 +97,12 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *new_node_ident(char name) {
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_IDENT;
+  node->name = name;
+  return node;
+}
 
 Node *mul() {
   Node *lhs = term();
@@ -98,6 +117,41 @@ Node *mul() {
   return lhs;
 }
 
+Node *assign();
+Node *expr();
+
+void program() {
+  int i;
+  i = 0;
+  while (tokens[pos].ty != TK_EOF) {
+    code[i] = assign();
+    i++;
+  }
+  code[i] = NULL;
+}
+
+/*
+ * assign: expr assign' ";"
+ * assign': ε | "=" expr assign'
+ */
+Node *assign() {
+  Node *lhs = expr();
+  while (tokens[pos].ty == '=') {
+    pos++;
+    lhs = new_node('=', lhs, expr());
+  }
+  if (tokens[pos].ty != ';') {
+    char str[256];
+    sprintf(str, "char %s is not ;", tokens[pos].input);
+    error(str);
+  }
+  pos++;
+  return lhs;
+}
+
+/* expr:  mul expr'
+ * expr': ε | "+" expr | "-" expr
+ */
 Node *expr() {
   Node *lhs = mul();
   if (tokens[pos].ty == '+') {
@@ -115,22 +169,59 @@ Node *term() {
   if (tokens[pos].ty == TK_NUM) {
     return new_node_num(tokens[pos++].val);
   }
+  if (tokens[pos].ty == TK_IDENT) {
+    return new_node_ident(*tokens[pos++].input);
+  }
   if (tokens[pos].ty == '(') {
     pos++;
     Node *node = expr();
     if (tokens[pos].ty != ')') {
-      error(pos);
+      char str[256];
+      sprintf(str, "char %s is not )", tokens[pos].input);
+      error(str);
     }
     pos++;
     return node;
   }
-  error(pos);
+  char str[256];
+  sprintf(str, "char %s is not supported", tokens[pos].input);
+  error(str);
+}
+
+void gen_lval(Node *node) {
+  if (node->ty == ND_IDENT) {
+    printf("  mov rax, rbp\n");
+    printf("  sub rax, %d\n", ('z' - node->name + 1) * 8);
+    printf("  push rax\n");
+    return;
+  }
+  char str[256];
+  sprintf(str, "char %c is ND_IDENT", node->ty);
+  error(str);
 }
 
 
 void gen(Node *node) {
   if (node->ty == ND_NUM) {
     printf("  push %d\n", node->val);
+    return;
+  }
+
+  if (node->ty == ND_IDENT) {
+    gen_lval(node);
+    printf("  pop rax\n");
+    printf("  mov rax, [rax]\n");
+    printf("  push rax\n");
+    return;
+  }
+
+  if (node->ty == '=') {
+    gen_lval(node->lhs);
+    gen(node->rhs);
+    printf("  pop rdi\n");
+    printf("  pop rax\n");
+    printf("  mov [rax], rdi\n");
+    printf("  push rdi\n");
     return;
   }
 
@@ -165,14 +256,25 @@ int main(int argc, char **argv) {
   }
 
   tokenize(argv[1]);
-  Node *node = expr();
+  //Node *node = expr();
+  program();
 
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
   printf("main:\n");
 
-  gen(node);
-  printf("  pop rax\n");
+  // prologue
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
+  printf("  sub rsp, 26*8\n");
+
+  for (int i = 0; code[i] != NULL; i++) {
+    gen(code[i]);
+    printf("  pop rax\n");
+  }
+
+  printf("  mov rsp, rbp\n");
+  printf("  pop rbp\n");
   printf("  ret\n");
   return 0;
 }
