@@ -4,6 +4,7 @@ SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
 9cc: $(OBJS)
+	cc -o $@ $(CFLAGS) $(OBJS) $(LDFLAGS) $(LDLIBS)
 
 $(OBJS): 9cc.h
 

@@ -19,7 +19,6 @@ void gen_lval(Node *node) {
   error(str);
 }
 
-
 void gen(Node *node) {
   if (node->ty == ND_NUM) {
     printf("  push %d\n", node->val);
@@ -67,4 +66,3 @@ void gen(Node *node) {
   }
   printf("  push rax\n");
 }
-

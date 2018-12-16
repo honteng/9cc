@@ -26,5 +26,7 @@ typedef struct Node {
 void tokenize(char *p);
 void program();
 void gen(Node *node);
+void error(char *str);
 
 extern Node *code[];
+extern Token tokens[];

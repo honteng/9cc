@@ -6,7 +6,6 @@
 #include "9cc.h"
 
 int pos = 0;
-Token tokens[100];
 
 Node *term();
 Node *assign();
@@ -15,47 +14,6 @@ Node *expr();
 void error(char *str) {
   fprintf(stderr, "%s", str);
   exit(1);
-}
-
-void tokenize(char *p) {
-  int i = 0;
-  while (*p) {
-    if (isspace(*p)) {
-      p++;
-      continue;
-    }
-
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' ||
-        *p == '(' || *p == ')' || *p == '=' || *p == ';') {
-      tokens[i].ty = *p;
-      tokens[i].input = p;
-      p++;
-      i++;
-      continue;
-    }
-
-    if ('a' <= *p && *p <= 'z') {
-      tokens[i].ty = TK_IDENT;
-      tokens[i].input = p;
-      i++;
-      p++;
-      continue;
-    }
-
-    if (isdigit(*p)) {
-      tokens[i].ty = TK_NUM;
-      tokens[i].input = p;
-      tokens[i].val = strtol(p, &p, 10);
-      i++;
-      continue;
-    }
-
-    fprintf(stderr, "unknown char %s in tokenizer", p);
-    exit(1);
-  }
-
-  tokens[i].ty = TK_EOF;
-  tokens[i].input = p;
 }
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
