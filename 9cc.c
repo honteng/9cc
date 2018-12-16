@@ -106,14 +106,13 @@ Node *new_node_ident(char name) {
 
 Node *mul() {
   Node *lhs = term();
-  if (tokens[pos].ty == '*') {
+  while (tokens[pos].ty == '*' || tokens[pos].ty == '/') {
+    int ty = tokens[pos].ty;
     pos++;
-    return new_node('*', lhs, mul());
+    Node *rhs = term();
+    lhs = new_node(ty, lhs, rhs);
   }
-  if (tokens[pos].ty == '/') {
-    pos++;
-    return new_node('/', lhs, mul());
-  }
+
   return lhs;
 }
 
@@ -154,13 +153,11 @@ Node *assign() {
  */
 Node *expr() {
   Node *lhs = mul();
-  if (tokens[pos].ty == '+') {
+  while (tokens[pos].ty == '+' || tokens[pos].ty == '-') {
+    int ty = tokens[pos].ty;
     pos++;
-    return new_node('+', lhs, expr());
-  }
-  if (tokens[pos].ty == '-') {
-    pos++;
-    return new_node('-', lhs, expr());
+    Node *rhs = mul();
+    lhs = new_node(ty, lhs, rhs);
   }
   return lhs;
 }
