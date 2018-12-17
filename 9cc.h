@@ -1,6 +1,8 @@
 enum {
   TK_NUM = 256,
   TK_IDENT,
+  TK_EQ,
+  TK_NEQ,
   TK_EOF,
 };
 

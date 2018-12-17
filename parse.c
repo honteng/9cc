@@ -10,6 +10,7 @@ int pos = 0;
 Node *term();
 Node *assign();
 Node *expr();
+Node *expr_cmp();
 
 void error(char *str) {
   fprintf(stderr, "%s", str);
@@ -61,14 +62,14 @@ void program() {
 }
 
 /*
- * assign: expr assign' ";"
- * assign': ε | "=" expr assign'
+ * assign: expr_cmp assign' ";"
+ * assign': eps | "=" expr_cmp assign'
  */
 Node *assign() {
-  Node *lhs = expr();
+  Node *lhs = expr_cmp();
   while (tokens[pos].ty == '=') {
     pos++;
-    lhs = new_node('=', lhs, expr());
+    lhs = new_node('=', lhs, expr_cmp());
   }
   if (tokens[pos].ty != ';') {
     char str[256];
@@ -79,8 +80,22 @@ Node *assign() {
   return lhs;
 }
 
+/*
+ * expr_cmp: exp (("==" | "!=") expr)*
+ */
+Node *expr_cmp() {
+  Node *lhs = expr();
+  while (tokens[pos].ty == TK_EQ || tokens[pos].ty == TK_NEQ) {
+    int ty = tokens[pos].ty;
+    pos++;
+    Node *rhs = expr();
+    lhs = new_node(ty, lhs, rhs);
+  }
+  return lhs;
+}
+
 /* expr:  mul expr'
- * expr': ε | "+" expr | "-" expr
+ * expr': eps | "+" expr | "-" expr
  */
 Node *expr() {
   Node *lhs = mul();
@@ -102,7 +117,7 @@ Node *term() {
   }
   if (tokens[pos].ty == '(') {
     pos++;
-    Node *node = expr();
+    Node *node = expr_cmp();
     if (tokens[pos].ty != ')') {
       char str[256];
       sprintf(str, "char %s is not )", tokens[pos].input);
