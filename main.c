@@ -11,6 +11,11 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+	if (strcmp("-test", argv[1]) == 0) {
+		runtest();
+		return 0;
+	}
+
   tokenize(argv[1]);
   program();
 

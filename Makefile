@@ -9,6 +9,7 @@ OBJS=$(SRCS:.c=.o)
 $(OBJS): 9cc.h
 
 test: 9cc
+	./9cc -test
 	./test.sh
 
 clean:
