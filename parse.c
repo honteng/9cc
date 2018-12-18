@@ -41,11 +41,14 @@ Node *new_node_ident(char name) {
 
 Node *mul() {
   Node *lhs = term();
-  while (tokens[pos].ty == '*' || tokens[pos].ty == '/') {
-    int ty = tokens[pos].ty;
+	Token *t0 = (Token*)tokens->data[0];
+	Token *t = (Token*)tokens->data[pos];
+  while (t->ty == '*' || t->ty == '/') {
+    int ty = t->ty;
     pos++;
     Node *rhs = term();
     lhs = new_node(ty, lhs, rhs);
+		t = (Token*)tokens->data[pos];
   }
 
   return lhs;
@@ -54,9 +57,11 @@ Node *mul() {
 void program() {
   int i;
   i = 0;
-  while (tokens[pos].ty != TK_EOF) {
+	Token *t = (Token*)tokens->data[pos];
+  while (t->ty != TK_EOF) {
     code[i] = assign();
     i++;
+		t = (Token*)tokens->data[pos];
   }
   code[i] = NULL;
 }
@@ -67,13 +72,15 @@ void program() {
  */
 Node *assign() {
   Node *lhs = expr_cmp();
-  while (tokens[pos].ty == '=') {
+	Token *t = (Token*)tokens->data[pos];
+  while (t->ty == '=') {
     pos++;
     lhs = new_node('=', lhs, expr_cmp());
+		t = (Token*)tokens->data[pos];
   }
-  if (tokens[pos].ty != ';') {
+  if (t->ty != ';') {
     char str[256];
-    sprintf(str, "char %s is not ;", tokens[pos].input);
+    sprintf(str, "char 0x%x is not ;", t->ty);
     error(str);
   }
   pos++;
@@ -85,11 +92,13 @@ Node *assign() {
  */
 Node *expr_cmp() {
   Node *lhs = expr();
-  while (tokens[pos].ty == TK_EQ || tokens[pos].ty == TK_NEQ) {
-    int ty = tokens[pos].ty;
+	Token *t = (Token*)tokens->data[pos];
+  while (t->ty == TK_EQ || t->ty == TK_NEQ) {
+    int ty = t->ty;
     pos++;
     Node *rhs = expr();
     lhs = new_node(ty, lhs, rhs);
+		t = (Token*)tokens->data[pos];
   }
   return lhs;
 }
@@ -99,34 +108,42 @@ Node *expr_cmp() {
  */
 Node *expr() {
   Node *lhs = mul();
-  while (tokens[pos].ty == '+' || tokens[pos].ty == '-') {
-    int ty = tokens[pos].ty;
+	Token *t = (Token*)tokens->data[pos];
+  while (t->ty == '+' || t->ty == '-') {
+    int ty = t->ty;
     pos++;
     Node *rhs = mul();
     lhs = new_node(ty, lhs, rhs);
+		t = (Token*)tokens->data[pos];
   }
   return lhs;
 }
 
 Node *term() {
-  if (tokens[pos].ty == TK_NUM) {
-    return new_node_num(tokens[pos++].val);
+	Token *t = (Token*)tokens->data[pos];
+  if (t->ty == TK_NUM) {
+    Node *n = new_node_num(t->val);
+		pos++;
+		return n;
   }
-  if (tokens[pos].ty == TK_IDENT) {
-    return new_node_ident(*tokens[pos++].input);
+  if (t->ty == TK_IDENT) {
+    Node *n = new_node_ident(*t->input);
+		pos++;
+		return n;
   }
-  if (tokens[pos].ty == '(') {
+  if (t->ty == '(') {
     pos++;
     Node *node = expr_cmp();
-    if (tokens[pos].ty != ')') {
+		t = (Token*)tokens->data[pos];
+    if (t->ty != ')') {
       char str[256];
-      sprintf(str, "char %s is not )", tokens[pos].input);
+      sprintf(str, "char %s is not )", t->input);
       error(str);
     }
     pos++;
     return node;
   }
   char str[256];
-  sprintf(str, "char %s is not supported", tokens[pos].input);
+  sprintf(str, "char %s is not supported", t->input);
   error(str);
 }

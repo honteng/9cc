@@ -5,9 +5,18 @@
 
 #include "9cc.h"
 
-Token tokens[100];
+Vector *tokens = NULL;
+
+void dump() {
+	fprintf(stderr, "====\n");
+	for (int i = 0; i < tokens->len; i++) {
+		Token *t = (Token*)tokens->data[i];
+		fprintf(stderr, "0x%x\n", t->ty);
+	}
+}
 
 void tokenize(char *p) {
+	tokens = new_vector();
   int i = 0;
   while (*p) {
     if (isspace(*p)) {
@@ -16,43 +25,48 @@ void tokenize(char *p) {
     }
 
     if (*p == '=' && *(p+1) == '=') {
-      tokens[i].ty = TK_EQ;
-      tokens[i].input = p;
+			Token *t = (Token*)malloc(sizeof(Token));
+      t->ty = TK_EQ;
+      t->input = p;
+			vec_push(tokens, t);
       p += 2;
-      i++;
       continue;
     }
 
     if (*p == '!' && *(p+1) == '=') {
-      tokens[i].ty = TK_NEQ;
-      tokens[i].input = p;
+			Token *t = (Token*)malloc(sizeof(Token));
+      t->ty = TK_NEQ;
+      t->input = p;
+			vec_push(tokens, t);
       p += 2;
-      i++;
       continue;
     }
 
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' ||
         *p == '(' || *p == ')' || *p == '=' || *p == ';') {
-      tokens[i].ty = *p;
-      tokens[i].input = p;
+			Token *t = (Token*)malloc(sizeof(Token));
+      t->ty = *p;
+      t->input = p;
+			vec_push(tokens, t);
       p++;
-      i++;
       continue;
     }
 
     if ('a' <= *p && *p <= 'z') {
-      tokens[i].ty = TK_IDENT;
-      tokens[i].input = p;
-      i++;
+			Token *t = (Token*)malloc(sizeof(Token));
+      t->ty = TK_IDENT;
+      t->input = p;
+			vec_push(tokens, t);
       p++;
       continue;
     }
 
     if (isdigit(*p)) {
-      tokens[i].ty = TK_NUM;
-      tokens[i].input = p;
-      tokens[i].val = strtol(p, &p, 10);
-      i++;
+			Token *t = (Token*)malloc(sizeof(Token));
+      t->ty = TK_NUM;
+      t->input = p;
+      t->val = strtol(p, &p, 10);
+			vec_push(tokens, t);
       continue;
     }
 
@@ -60,6 +74,8 @@ void tokenize(char *p) {
     exit(1);
   }
 
-  tokens[i].ty = TK_EOF;
-  tokens[i].input = p;
+	Token *t = (Token*)malloc(sizeof(Token));
+  t->ty = TK_EOF;
+  t->input = p;
+	vec_push(tokens, t);
 }

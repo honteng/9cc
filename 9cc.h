@@ -31,7 +31,6 @@ void gen(Node *node);
 void error(char *str);
 
 extern Node *code[];
-extern Token tokens[];
 
 typedef struct {
   void **data;
@@ -43,6 +42,8 @@ typedef struct {
   Vector *keys;
   Vector *vals;
 } Map;
+
+extern Vector *tokens; // *Token
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
