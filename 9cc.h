@@ -30,8 +30,6 @@ void program();
 void gen(Node *node);
 void error(char *str);
 
-extern Node *code[];
-
 typedef struct {
   void **data;
   int capacity;
@@ -44,6 +42,7 @@ typedef struct {
 } Map;
 
 extern Vector *tokens; // *Token
+extern Vector *code; // *Node
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);

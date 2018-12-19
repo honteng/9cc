@@ -28,8 +28,8 @@ int main(int argc, char **argv) {
 	printf("  mov rbp, rsp\n");
 	printf("  sub rsp, 26*8\n");
 
-	for (int i = 0; code[i] != NULL; i++) {
-		gen(code[i]);
+	for (int i = 0; i < code->len; i++) {
+		gen((Node*)code->data[i]);
 		printf("  pop rax\n");
 	}
 

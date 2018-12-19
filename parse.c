@@ -5,6 +5,8 @@
 
 #include "9cc.h"
 
+Vector *code;
+
 int pos = 0;
 
 Node *term();
@@ -55,15 +57,13 @@ Node *mul() {
 }
 
 void program() {
-	int i;
-	i = 0;
+  code = new_vector();
+
 	Token *t = (Token*)tokens->data[pos];
 	while (t->ty != TK_EOF) {
-		code[i] = assign();
-		i++;
+		vec_push(code, assign());
 		t = (Token*)tokens->data[pos];
 	}
-	code[i] = NULL;
 }
 
 /*

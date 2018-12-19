@@ -5,8 +5,6 @@
 
 #include "9cc.h"
 
-Node *code[100];
-
 void gen_lval(Node *node) {
   if (node->ty == ND_IDENT) {
     printf("  mov rax, rbp\n");
