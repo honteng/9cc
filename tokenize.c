@@ -47,6 +47,38 @@ void tokenize(char *p) {
       continue;
     }
 
+    if (*p == '<') {
+      Token *t = (Token*)malloc(sizeof(Token));
+      if (*(p+1) == '=') {
+        t->ty = TK_STE;
+        t->input = p;
+        vec_push(tokens, t);
+        p += 2;
+        continue;
+      }
+      t->ty = TK_ST;
+      t->input = p;
+      vec_push(tokens, t);
+      p++;
+      continue;
+    }
+
+    if (*p == '>') {
+      Token *t = (Token*)malloc(sizeof(Token));
+      if (*(p+1) == '=') {
+        t->ty = TK_GTE;
+        t->input = p;
+        vec_push(tokens, t);
+        p += 2;
+        continue;
+      }
+      t->ty = TK_GT;
+      t->input = p;
+      vec_push(tokens, t);
+      p++;
+      continue;
+    }
+
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' ||
         *p == '(' || *p == ')' || *p == '=' || *p == ';' ||
         *p == ',' || *p == '{' || *p == '}') {

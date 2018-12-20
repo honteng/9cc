@@ -3,6 +3,10 @@ enum {
   TK_IDENT,
   TK_EQ,
   TK_NEQ,
+  TK_ST, // Smaller Then
+  TK_STE, // Smaller Then or Equal to
+  TK_GT, // Greater Then
+  TK_GTE, // Greater Then or Equal to
   TK_EOF,
 };
 
