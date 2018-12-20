@@ -25,5 +25,15 @@ void test_tokenize() {
   tokenize(">=");
   t = (Token*)tokens->data[0];
   expect(__LINE__, t->ty, TK_GTE);
-}
+
+  tokenize("if{}else{return;};");
+  t = (Token*)tokens->data[0];
+  expect(__LINE__, t->ty, TK_IF);
+  t = (Token*)tokens->data[1];
+  expect(__LINE__, t->ty, '{');
+  t = (Token*)tokens->data[2];
+  expect(__LINE__, t->ty, '}');
+  t = (Token*)tokens->data[3];
+  expect(__LINE__, t->ty, TK_ELSE);
+ }
 

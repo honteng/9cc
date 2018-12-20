@@ -6,6 +6,7 @@
 #include "9cc.h"
 
 Vector *tokens = NULL;
+Map *keywords = NULL;
 
 void dump() {
   fprintf(stderr, "====\n");
@@ -20,8 +21,27 @@ int isletter(char c) {
     ('A' <= c && c <= 'Z') || c == '_';
 }
 
+void setup_keywords() {
+  keywords = new_map();
+  map_put(keywords, "return", (void*)TK_RETURN);
+  map_put(keywords, "if", (void*)TK_IF);
+  map_put(keywords, "else", (void*)TK_ELSE);
+  map_put(keywords, "for", (void*)TK_FOR);
+  map_put(keywords, "while", (void*)TK_WHILE);
+}
+
+int lookup_ident(char *ident) {
+  int val = (int)map_get(keywords, ident);
+  if (val != 0) {
+    return val;
+  }
+  return TK_IDENT;
+}
+
 void tokenize(char *p) {
   tokens = new_vector();
+  setup_keywords();
+
   int i = 0;
   while (*p) {
     if (isspace(*p)) {
@@ -101,12 +121,14 @@ void tokenize(char *p) {
 
     if (isletter(*p)) {
       Token *t = (Token*)malloc(sizeof(Token));
-      t->ty = TK_IDENT;
       t->input = p;
       while(isletter(*p)) {
         p++;
       }
-      t->input_len = p - t->input;
+      int l = p - t->input;
+      char* s = strndup(t->input, l);
+      t->ty = lookup_ident(s);
+      t->input_len = l;
       vec_push(tokens, t);
       continue;
     }

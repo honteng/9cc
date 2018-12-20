@@ -7,6 +7,11 @@ enum {
   TK_STE, // Smaller Then or Equal to
   TK_GT, // Greater Then
   TK_GTE, // Greater Then or Equal to
+  TK_IF,
+  TK_ELSE,
+  TK_RETURN,
+  TK_FOR,
+  TK_WHILE,
   TK_EOF,
 };
 
