@@ -15,6 +15,11 @@ void dump() {
   }
 }
 
+int isletter(char c) {
+  return ('a' <= c && c <= 'z') ||
+    ('A' <= c && c <= 'Z') || c == '_';
+}
+
 void tokenize(char *p) {
   tokens = new_vector();
   int i = 0;
@@ -43,18 +48,10 @@ void tokenize(char *p) {
     }
 
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' ||
-        *p == '(' || *p == ')' || *p == '=' || *p == ';') {
+        *p == '(' || *p == ')' || *p == '=' || *p == ';' ||
+        *p == ',' || *p == '{' || *p == '}') {
       Token *t = (Token*)malloc(sizeof(Token));
       t->ty = *p;
-      t->input = p;
-      vec_push(tokens, t);
-      p++;
-      continue;
-    }
-
-    if ('a' <= *p && *p <= 'z') {
-      Token *t = (Token*)malloc(sizeof(Token));
-      t->ty = TK_IDENT;
       t->input = p;
       vec_push(tokens, t);
       p++;
@@ -66,6 +63,18 @@ void tokenize(char *p) {
       t->ty = TK_NUM;
       t->input = p;
       t->val = strtol(p, &p, 10);
+      vec_push(tokens, t);
+      continue;
+    }
+
+    if (isletter(*p)) {
+      Token *t = (Token*)malloc(sizeof(Token));
+      t->ty = TK_IDENT;
+      t->input = p;
+      while(isletter(*p)) {
+        p++;
+      }
+      t->input_len = p - t->input;
       vec_push(tokens, t);
       continue;
     }

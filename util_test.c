@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern test_tokenize();
+
 void expect(int line, int expected, int actual) {
   if (expected == actual) {
     return;
@@ -40,6 +42,7 @@ void test_map() {
 }
 
 void runtest() {
+  test_tokenize();
   test_vector();
   test_map();
   printf("OK\n");

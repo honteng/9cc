@@ -15,6 +15,7 @@ typedef struct {
   int ty;
   int val;
   char *input;
+  int input_len;
 } Token;
 
 typedef struct Node {
