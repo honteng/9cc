@@ -93,7 +93,9 @@ Node *assign() {
 Node *expr_cmp() {
 	Node *lhs = expr();
 	Token *t = (Token*)tokens->data[pos];
-	while (t->ty == TK_EQ || t->ty == TK_NEQ) {
+	while (t->ty == TK_EQ || t->ty == TK_NEQ ||
+      t->ty == TK_ST || t->ty == TK_STE ||
+      t->ty == TK_GT || t->ty == TK_GTE) {
 		int ty = t->ty;
 		pos++;
 		Node *rhs = expr();
