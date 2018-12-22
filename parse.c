@@ -91,6 +91,22 @@ Node *statement() {
     return new_node(ND_RETURN, NULL, rhs);
   }
 
+  if (t->ty == '{') {
+    pos++;
+    Node* block = new_node(ND_BLOCK, NULL, NULL);
+    block->code = new_vector();
+    t = (Token*)tokens->data[pos];
+    while (t->ty != '}') {
+      Node* s = statement();
+      if (s != NULL) {
+        vec_push(block->code, s);
+      }
+      t = (Token*)tokens->data[pos];
+    }
+    pos++;
+    return block;
+  }
+
   Node *n = assign();
   return n;
 

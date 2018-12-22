@@ -31,12 +31,21 @@ void gen(Node *node) {
     return;
   }
 
+  // temporarrily
   if (node->ty == ND_RETURN) {
     gen(node->rhs);
     printf("  pop rax\n");
     printf("  mov rsp, rbp\n");
     printf("  pop rbp\n");
     printf("  ret\n");
+    return;
+  }
+
+  if (node->ty == ND_BLOCK) {
+    for (int i = 0; i < node->code->len; i++) {
+      Node *n = (Node*)node->code->data[i];
+      gen(n);
+    }
     return;
   }
 

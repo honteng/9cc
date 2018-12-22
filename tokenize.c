@@ -125,6 +125,7 @@ void tokenize(char *p) {
       while(isletter(*p)) {
         p++;
       }
+
       int l = p - t->input;
       char* s = strndup(t->input, l);
       t->ty = lookup_ident(s);

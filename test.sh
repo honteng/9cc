@@ -33,14 +33,14 @@ try 9 "10-(3-2);"
 try 2 "(3+5)/2/2;"
 try 8 "(3+5)/2*2;"
 try 1 "1==1;"
-try 1 "1!=3;"
-try 0 "1!=1;"
 try 0 "1<1;"
 try 1 "1<2;"
 try 1 "1 <= 1;"
 try 0 "1>1;"
 try 1 "2>1;"
 try 1 "1 >= 1;"
-try 6 'return 6; 1;'
+try 6 "return 6; 1;"
 try 26 'return 6+10*2; 1;'
+try 1 "1!=3;"
+try 0 "1!=1;"
 echo OK

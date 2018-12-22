@@ -15,10 +15,24 @@ enum {
   TK_EOF,
 };
 
+// For now, matching to TK_
 enum {
   ND_NUM = 256,
   ND_IDENT,
+  ND_EQ,
+  ND_NEQ,
+  ND_ST, // Smaller Then
+  ND_STE, // Smaller Then or Equal to
+  ND_GT, // Greater Then
+  ND_GTE, // Greater Then or Equal to
+  ND_IF,
+  ND_ELSE,
   ND_RETURN,
+  ND_FOR,
+  ND_WHILE,
+  ND_EOF,
+
+  ND_BLOCK = 512,
 };
 
 typedef struct {
@@ -28,17 +42,8 @@ typedef struct {
   int input_len;
 } Token;
 
-typedef struct Node {
-  int ty;
-  struct Node *lhs;
-  struct Node *rhs;
-  int val; // used when ty == ND_NUM
-  char name; // used when ty == ND_IDENT
-} Node;
-
 void tokenize(char *p);
 void program();
-void gen(Node *node);
 void error(char *str);
 
 typedef struct {
@@ -46,6 +51,17 @@ typedef struct {
   int capacity;
   int len;
 } Vector;
+
+typedef struct Node {
+  int ty;
+  Vector *code; // *Node
+  struct Node *lhs;
+  struct Node *rhs;
+  int val; // used when ty == ND_NUM
+  char name; // used when ty == ND_IDENT
+} Node;
+
+void gen(Node *node);
 
 typedef struct {
   Vector *keys;
