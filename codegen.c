@@ -19,27 +19,14 @@ void gen_lval(Node *node) {
   error(str);
 }
 
-void gen(Node *node) {
-  if (node->ty == ND_NUM) {
-    printf("  push %d\n", node->val);
-    return;
-  }
-
-  if (node->ty == ND_IDENT) {
-    gen_lval(node);
-    printf("  pop rax\n");
-    printf("  mov rax, [rax]\n");
-    printf("  push rax\n");
-    return;
-  }
-
+int statement_gen(Node* node) {
   if (node->ty == ND_RETURN) {
     gen(node->rhs);
     printf("  pop rax\n");
     printf("  mov rsp, rbp\n");
     printf("  pop rbp\n");
     printf("  ret\n");
-    return;
+    return 1;
   }
 
   if (node->ty == ND_BLOCK) {
@@ -47,7 +34,7 @@ void gen(Node *node) {
       Node *n = (Node*)node->code->data[i];
       gen(n);
     }
-    return;
+    return 1;
   }
 
   if (node->ty == ND_IF) {
@@ -63,7 +50,7 @@ void gen(Node *node) {
     }
     printf("ENDIF%d:\n", if_cnt);
     if_cnt++;
-    return;
+    return 1;
   }
 
   if (node->ty == '=') {
@@ -73,6 +60,27 @@ void gen(Node *node) {
     printf("  pop rax\n");
     printf("  mov [rax], rdi\n");
     printf("  push rdi\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+void gen(Node *node) {
+  if (node->ty == ND_NUM) {
+    printf("  push %d\n", node->val);
+    return;
+  }
+
+  if (node->ty == ND_IDENT) {
+    gen_lval(node);
+    printf("  pop rax\n");
+    printf("  mov rax, [rax]\n");
+    printf("  push rax\n");
+    return;
+  }
+
+  if (statement_gen(node)) {
     return;
   }
 

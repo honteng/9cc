@@ -33,6 +33,7 @@ enum {
   ND_EOF,
 
   ND_BLOCK = 512,
+  ND_FUNC,
 };
 
 typedef struct {
