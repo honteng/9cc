@@ -31,7 +31,6 @@ void gen(Node *node) {
     return;
   }
 
-  // temporarrily
   if (node->ty == ND_RETURN) {
     gen(node->rhs);
     printf("  pop rax\n");
@@ -46,6 +45,21 @@ void gen(Node *node) {
       Node *n = (Node*)node->code->data[i];
       gen(n);
     }
+    return;
+  }
+
+  if (node->ty == ND_IF) {
+    gen((Node*)(node->code->data[0]));
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je ELSE0\n");
+    gen(node->lhs);
+    printf("  je ENDIF0\n");
+    printf("ELSE0:\n");
+    if (node->rhs) {
+      gen(node->rhs);
+    }
+    printf("ENDIF0:\n");
     return;
   }
 

@@ -44,4 +44,5 @@ try 26 'return 6+10*2; 1;'
 try 1 "1!=3;"
 try 0 "1!=1;"
 try 4 "{a=1; b=a+2; return b+1;}"
+try 11 "if (1) 11;"
 echo OK

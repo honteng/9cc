@@ -128,19 +128,19 @@ Node *if_statement() {
   pos++;
   Node* node = new_node(ND_IF, NULL, NULL);
   node->code = new_vector();
-  t = cur_token();
+  Token *t = cur_token();
   if (t->ty != '(') {
 		char str[256];
-		sprintf(str, "%d char 0x%x is not (", __LINE__, t->ty);
+		sprintf(str, "%d char 0x%x is not (\n", __LINE__, t->ty);
 		error(str);
   }
   pos++;
-  t = cur_token();
   Node *cmp = expr_cmp();
-  vec_push(node->code, cmd);
+  vec_push(node->code, cmp);
+  t = cur_token();
   if (t->ty != ')') {
 		char str[256];
-		sprintf(str, "%d char 0x%x is not )", __LINE__, t->ty);
+		sprintf(str, "%d char 0x%x is not )\n", __LINE__, t->ty);
 		error(str);
   }
   pos++;
