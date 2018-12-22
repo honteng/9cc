@@ -13,6 +13,12 @@ Node *term();
 Node *assign();
 Node *expr();
 Node *expr_cmp();
+Node *statement();
+Node *if_statement();
+
+Token* cur_token() {
+  return (Token*)tokens->data[pos];
+}
 
 void error(char *str) {
 	fprintf(stderr, "%s", str);
@@ -55,8 +61,6 @@ Node *mul() {
 
 	return lhs;
 }
-
-Node *statement();
 
 void program() {
   code = new_vector();
@@ -107,9 +111,41 @@ Node *statement() {
     return block;
   }
 
+  if (t->ty == TK_IF) {
+    return if_statement();
+  }
+
   Node *n = assign();
   return n;
+}
 
+/*
+ * code[0] condition
+ * lhs true block
+ * rhs false block
+ */
+Node *if_statement() {
+  pos++;
+  Node* node = new_node(ND_IF, NULL, NULL);
+  node->code = new_vector();
+  t = cur_token();
+  if (t->ty != '(') {
+		char str[256];
+		sprintf(str, "%d char 0x%x is not (", __LINE__, t->ty);
+		error(str);
+  }
+  pos++;
+  t = cur_token();
+  Node *cmp = expr_cmp();
+  vec_push(node->code, cmd);
+  if (t->ty != ')') {
+		char str[256];
+		sprintf(str, "%d char 0x%x is not )", __LINE__, t->ty);
+		error(str);
+  }
+  pos++;
+  node->lhs = statement();
+  return node;
 }
 
 /*

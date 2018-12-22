@@ -26,7 +26,7 @@ enum {
   ND_GT, // Greater Then
   ND_GTE, // Greater Then or Equal to
   ND_IF,
-  ND_ELSE,
+  ND_ELSE, // Should not be used
   ND_RETURN,
   ND_FOR,
   ND_WHILE,
