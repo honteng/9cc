@@ -145,6 +145,12 @@ Node *if_statement() {
   }
   pos++;
   node->lhs = statement();
+
+  t = cur_token();
+  if (t->ty == TK_ELSE) {
+    pos++;
+    node->rhs = statement();
+  }
   return node;
 }
 
