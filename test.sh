@@ -41,4 +41,6 @@ try 1 "1 <= 1;"
 try 0 "1>1;"
 try 1 "2>1;"
 try 1 "1 >= 1;"
+try 6 'return 6; 1;'
+try 26 'return 6+10*2; 1;'
 echo OK

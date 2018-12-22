@@ -56,14 +56,44 @@ Node *mul() {
 	return lhs;
 }
 
+Node *statement();
+
 void program() {
   code = new_vector();
 
 	Token *t = (Token*)tokens->data[pos];
 	while (t->ty != TK_EOF) {
-		vec_push(code, assign());
-		t = (Token*)tokens->data[pos];
+    Node* s = statement();
+    if (s != NULL) {
+      vec_push(code, s);
+    }
+    t = (Token*)tokens->data[pos];
 	}
+}
+
+Node *statement() {
+	Token *t = (Token*)tokens->data[pos];
+  if (t->ty == ';') {
+    pos++;
+    return NULL;
+  }
+
+  if (t->ty == TK_RETURN) {
+    pos++;
+    Node *rhs = expr_cmp();
+    Token *t = (Token*)tokens->data[pos];
+    if (t->ty != ';') {
+      char str[256];
+      sprintf(str, "%d char 0x%x is not ;", __LINE__, t->ty);
+      error(str);
+    }
+    pos++;
+    return new_node(ND_RETURN, NULL, rhs);
+  }
+
+  Node *n = assign();
+  return n;
+
 }
 
 /*
@@ -80,7 +110,7 @@ Node *assign() {
 	}
 	if (t->ty != ';') {
 		char str[256];
-		sprintf(str, "char 0x%x is not ;", t->ty);
+		sprintf(str, "%d char 0x%x is not ;", __LINE__, t->ty);
 		error(str);
 	}
 	pos++;
