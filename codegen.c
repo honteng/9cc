@@ -5,6 +5,8 @@
 
 #include "9cc.h"
 
+int if_cnt = 0;
+
 void gen_lval(Node *node) {
   if (node->ty == ND_IDENT) {
     printf("  mov rax, rbp\n");
@@ -52,14 +54,15 @@ void gen(Node *node) {
     gen((Node*)(node->code->data[0]));
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je ELSE0\n");
+    printf("  je ELSE%d\n", if_cnt);
     gen(node->lhs);
-    printf("  je ENDIF0\n");
-    printf("ELSE0:\n");
+    printf("  je ENDIF%d\n", if_cnt);
+    printf("ELSE%d:\n", if_cnt);
     if (node->rhs) {
       gen(node->rhs);
     }
-    printf("ENDIF0:\n");
+    printf("ENDIF%d:\n", if_cnt);
+    if_cnt++;
     return;
   }
 

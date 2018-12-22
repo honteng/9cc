@@ -46,4 +46,5 @@ try 0 "1!=1;"
 try 4 "{a=1; b=a+2; return b+1;}"
 try 11 "if (1) 11;"
 try 10 "a = 10; if (1) 1; else a;"
+try 10 "if (1+1!=2) return 1; else 10;"
 echo OK
