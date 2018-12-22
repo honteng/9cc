@@ -49,7 +49,6 @@ Node *new_node_ident(char name) {
 
 Node *mul() {
 	Node *lhs = term();
-	Token *t0 = (Token*)tokens->data[0];
 	Token *t = cur_token();
 	while (t->ty == '*' || t->ty == '/') {
 		int ty = t->ty;
