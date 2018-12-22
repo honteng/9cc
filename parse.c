@@ -50,13 +50,13 @@ Node *new_node_ident(char name) {
 Node *mul() {
 	Node *lhs = term();
 	Token *t0 = (Token*)tokens->data[0];
-	Token *t = (Token*)tokens->data[pos];
+	Token *t = cur_token();
 	while (t->ty == '*' || t->ty == '/') {
 		int ty = t->ty;
 		pos++;
 		Node *rhs = term();
 		lhs = new_node(ty, lhs, rhs);
-		t = (Token*)tokens->data[pos];
+		t = cur_token();
 	}
 
 	return lhs;
@@ -65,7 +65,7 @@ Node *mul() {
 void program() {
   code = new_vector();
 
-	Token *t = (Token*)tokens->data[pos];
+	Token *t = cur_token();
 	while (t->ty != TK_EOF) {
     Node* s = statement();
     if (s != NULL) {
@@ -76,7 +76,7 @@ void program() {
 }
 
 Node *statement() {
-	Token *t = (Token*)tokens->data[pos];
+	Token *t = cur_token();
   if (t->ty == ';') {
     pos++;
     return NULL;
@@ -85,7 +85,7 @@ Node *statement() {
   if (t->ty == TK_RETURN) {
     pos++;
     Node *rhs = expr_cmp();
-    Token *t = (Token*)tokens->data[pos];
+    t = cur_token();
     if (t->ty != ';') {
       char str[256];
       sprintf(str, "%d char 0x%x is not ;", __LINE__, t->ty);
@@ -99,13 +99,13 @@ Node *statement() {
     pos++;
     Node* block = new_node(ND_BLOCK, NULL, NULL);
     block->code = new_vector();
-    t = (Token*)tokens->data[pos];
+    t = cur_token();
     while (t->ty != '}') {
       Node* s = statement();
       if (s != NULL) {
         vec_push(block->code, s);
       }
-      t = (Token*)tokens->data[pos];
+      t = cur_token();
     }
     pos++;
     return block;
@@ -160,11 +160,11 @@ Node *if_statement() {
  */
 Node *assign() {
 	Node *lhs = expr_cmp();
-	Token *t = (Token*)tokens->data[pos];
+  Token *t = cur_token();
 	while (t->ty == '=') {
 		pos++;
 		lhs = new_node('=', lhs, expr_cmp());
-		t = (Token*)tokens->data[pos];
+    t = cur_token();
 	}
 	if (t->ty != ';') {
 		char str[256];
@@ -180,7 +180,7 @@ Node *assign() {
  */
 Node *expr_cmp() {
 	Node *lhs = expr();
-	Token *t = (Token*)tokens->data[pos];
+  Token *t = cur_token();
 	while (t->ty == TK_EQ || t->ty == TK_NEQ ||
       t->ty == TK_ST || t->ty == TK_STE ||
       t->ty == TK_GT || t->ty == TK_GTE) {
@@ -188,7 +188,7 @@ Node *expr_cmp() {
 		pos++;
 		Node *rhs = expr();
 		lhs = new_node(ty, lhs, rhs);
-		t = (Token*)tokens->data[pos];
+    t = cur_token();
 	}
 	return lhs;
 }
@@ -198,19 +198,19 @@ Node *expr_cmp() {
  */
 Node *expr() {
 	Node *lhs = mul();
-	Token *t = (Token*)tokens->data[pos];
+  Token *t = cur_token();
 	while (t->ty == '+' || t->ty == '-') {
 		int ty = t->ty;
 		pos++;
 		Node *rhs = mul();
 		lhs = new_node(ty, lhs, rhs);
-		t = (Token*)tokens->data[pos];
+    t = cur_token();
 	}
 	return lhs;
 }
 
 Node *term() {
-	Token *t = (Token*)tokens->data[pos];
+  Token *t = cur_token();
 	if (t->ty == TK_NUM) {
 		Node *n = new_node_num(t->val);
 		pos++;
@@ -224,7 +224,7 @@ Node *term() {
 	if (t->ty == '(') {
 		pos++;
 		Node *node = expr_cmp();
-		t = (Token*)tokens->data[pos];
+    t = cur_token();
 		if (t->ty != ')') {
 			char str[256];
 			sprintf(str, "char %s is not )", t->input);
