@@ -6,6 +6,7 @@
 #include "9cc.h"
 
 Vector *code;
+Map *functions;
 
 int pos = 0;
 
@@ -15,6 +16,7 @@ Node *expr();
 Node *expr_cmp();
 Node *statement();
 Node *if_statement();
+Node *function();
 
 Token* cur_token() {
   return (Token*)tokens->data[pos];
@@ -61,17 +63,81 @@ Node *mul() {
 	return lhs;
 }
 
-void program() {
+void program(int simple) {
   code = new_vector();
+  functions = new_map();
 
 	Token *t = cur_token();
 	while (t->ty != TK_EOF) {
-    Node* s = statement();
+    Node* s;
+    if (simple) {
+      s = statement();
+    } else {
+      s = function();
+    }
     if (s != NULL) {
       vec_push(code, s);
     }
     t = (Token*)tokens->data[pos];
 	}
+}
+
+Node *function() {
+  Node *n = new_node(ND_FUNC, NULL, NULL);
+
+	Token *t = cur_token();
+  if (t->ty != TK_IDENT) {
+    char str[256];
+    sprintf(str, "%d char 0x%x is not IDENT\n", __LINE__, t->ty);
+    error(str);
+  }
+
+  // FIXME
+  char* s = strndup(t->input, t->input_len);
+  n->long_name = s;
+  map_put(functions, n->long_name, n);
+
+  pos++;
+  t = cur_token();
+  if (t->ty != '(') {
+    char str[256];
+    sprintf(str, "%d char 0x%x is not IDENT\n", __LINE__, t->ty);
+    error(str);
+  }
+
+  // Parse params
+  pos++;
+  t = cur_token();
+  n->params = new_vector();
+  while (t->ty != ')') {
+    if (t->ty != TK_IDENT) {
+      error("Failed to parse func params0");
+    }
+    vec_push(n->params, new_node_ident(*t->input));
+    pos++;
+    t = cur_token();
+    if (t->ty == ',') {
+      pos++;
+      t = cur_token();
+    } else if(t->ty != ')') {
+      error("Failed to parse func params1");
+    }
+  }
+
+  // Parse func body
+  pos++;
+  t = cur_token();
+  if (t->ty != '{') {
+    error("Failed to parse func body0");
+  }
+  pos++;
+  n->rhs = statement();
+  t = cur_token();
+  if (t->ty != '}') {
+    error("Failed to parse func body1");
+  }
+  pos++;
+  return n;
 }
 
 Node *statement() {

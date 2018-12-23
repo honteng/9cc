@@ -12,6 +12,8 @@ enum {
   TK_RETURN,
   TK_FOR,
   TK_WHILE,
+  TK_INT,
+  TK_CHAR,
   TK_EOF,
 };
 
@@ -30,6 +32,8 @@ enum {
   ND_RETURN,
   ND_FOR,
   ND_WHILE,
+  ND_INT,
+  ND_CHAR,
   ND_EOF,
 
   ND_BLOCK = 512,
@@ -55,6 +59,8 @@ typedef struct {
 
 typedef struct Node {
   int ty;
+  char *long_name;
+  Vector *params; // *Node used when ND_FUNC
   Vector *code; // *Node
   struct Node *lhs;
   struct Node *rhs;

@@ -28,6 +28,8 @@ void setup_keywords() {
   map_put(keywords, "else", (void*)TK_ELSE);
   map_put(keywords, "for", (void*)TK_FOR);
   map_put(keywords, "while", (void*)TK_WHILE);
+  map_put(keywords, "char", (void*)TK_CHAR);
+  map_put(keywords, "int", (void*)TK_INT);
 }
 
 int lookup_ident(char *ident) {

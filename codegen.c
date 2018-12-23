@@ -66,6 +66,37 @@ int statement_gen(Node* node) {
   return 0;
 }
 
+int function_gen(Node *node) {
+  if (node->ty != ND_FUNC) {
+    return 0;
+  }
+
+  printf("%s:\n", node->long_name);
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n"); // rbp has caller stack pointer
+  printf("__%d:\n", __LINE__);
+  for (int i = 0; i < node->params->len; i++) {
+    Node *p = (Node*)node->params->data[i];
+    if (p->ty != ND_IDENT) {
+      error("Failed to get param");
+    }
+    printf("  mov rax, rbp\n");
+    printf("  sub rax, %d\n", ('z' - p->name + 1) * 8); // rax has a pointer to the value
+    printf("  mov rdi, [rbp + %d]\n", i*8+16); // get the param value from the stack
+    printf("  mov [rax], rdi\n"); // set the value to the stack
+  }
+  printf("__%d:\n", __LINE__);
+
+  // allocate auto variable area
+  printf("  sub rsp, 26*8\n");
+
+  gen(node->rhs);
+
+  printf("__%d:\n", __LINE__);
+
+  return 1;
+}
+
 void gen(Node *node) {
   if (node->ty == ND_NUM) {
     printf("  push %d\n", node->val);
@@ -81,6 +112,10 @@ void gen(Node *node) {
   }
 
   if (statement_gen(node)) {
+    return;
+  }
+
+  if (function_gen(node)) {
     return;
   }
 
