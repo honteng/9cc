@@ -10,13 +10,13 @@ Map *functions;
 
 int pos = 0;
 
-Node *term();
-Node *assign();
-Node *expr();
-Node *expr_cmp();
-Node *statement();
-Node *if_statement();
-Node *function();
+Node *parse_term();
+Node *parse_assign();
+Node *parse_expr();
+Node *parse_expr2();
+Node *parse_statement();
+Node *parse_if_statement();
+Node *parse_function();
 
 Token* cur_token() {
   return (Token*)tokens->data[pos];
@@ -54,12 +54,12 @@ Node *new_node_ident(char name) {
 }
 
 Node *mul() {
-	Node *lhs = term();
+	Node *lhs = parse_term();
 	Token *t = cur_token();
 	while (t->ty == '*' || t->ty == '/') {
 		int ty = t->ty;
 		pos++;
-		Node *rhs = term();
+		Node *rhs = parse_term();
 		lhs = new_node(ty, lhs, rhs);
 		t = cur_token();
 	}
@@ -75,9 +75,9 @@ void program(int simple) {
 	while (t->ty != TK_EOF) {
     Node* s;
     if (simple) {
-      s = statement();
+      s = parse_statement();
     } else {
-      s = function();
+      s = parse_function();
     }
     if (s != NULL) {
       vec_push(code, s);
@@ -86,7 +86,7 @@ void program(int simple) {
 	}
 }
 
-Node *function() {
+Node *parse_function() {
   Node *n = new_node(ND_FUNC, NULL, NULL);
 
 	Token *t = cur_token();
@@ -132,12 +132,12 @@ Node *function() {
   if (t->ty != '{') {
     error("Failed to parse func body0");
   }
-  n->rhs = statement();
+  n->rhs = parse_statement();
   t = cur_token();
   return n;
 }
 
-Node *statement() {
+Node *parse_statement() {
 	Token *t = cur_token();
   if (t->ty == ';') {
     pos++;
@@ -146,7 +146,7 @@ Node *statement() {
 
   if (t->ty == TK_RETURN) {
     pos++;
-    Node *rhs = expr_cmp();
+    Node *rhs = parse_expr();
     t = cur_token();
     if (t->ty != ';') {
       char str[256];
@@ -163,7 +163,7 @@ Node *statement() {
     block->code = new_vector();
     t = cur_token();
     while (t->ty != '}') {
-      Node* s = statement();
+      Node* s = parse_statement();
       if (s != NULL) {
         vec_push(block->code, s);
       }
@@ -174,10 +174,10 @@ Node *statement() {
   }
 
   if (t->ty == TK_IF) {
-    return if_statement();
+    return parse_if_statement();
   }
 
-  Node *n = assign();
+  Node *n = parse_assign();
   return n;
 }
 
@@ -186,7 +186,7 @@ Node *statement() {
  * lhs true block
  * rhs false block
  */
-Node *if_statement() {
+Node *parse_if_statement() {
   pos++;
   Node* node = new_node(ND_IF, NULL, NULL);
   node->code = new_vector();
@@ -197,7 +197,7 @@ Node *if_statement() {
 		error(str);
   }
   pos++;
-  Node *cmp = expr_cmp();
+  Node *cmp = parse_expr();
   vec_push(node->code, cmp);
   t = cur_token();
   if (t->ty != ')') {
@@ -206,26 +206,26 @@ Node *if_statement() {
 		error(str);
   }
   pos++;
-  node->lhs = statement();
+  node->lhs = parse_statement();
 
   t = cur_token();
   if (t->ty == TK_ELSE) {
     pos++;
-    node->rhs = statement();
+    node->rhs = parse_statement();
   }
   return node;
 }
 
 /*
- * assign: expr_cmp assign' ";"
- * assign': eps | "=" expr_cmp assign'
+ * parse_assign: parse_expr parse_assign' ";"
+ * parse_assign': eps | "=" parse_expr parse_assign'
  */
-Node *assign() {
-	Node *lhs = expr_cmp();
+Node *parse_assign() {
+	Node *lhs = parse_expr();
   Token *t = cur_token();
 	while (t->ty == '=') {
 		pos++;
-		lhs = new_node('=', lhs, expr_cmp());
+		lhs = new_node('=', lhs, parse_expr());
     t = cur_token();
 	}
 	if (t->ty != ';') {
@@ -238,27 +238,27 @@ Node *assign() {
 }
 
 /*
- * expr_cmp: exp (("==" | "!=") expr)*
+ * parse_expr: exp (("==" | "!=") parse_expr2)*
  */
-Node *expr_cmp() {
-	Node *lhs = expr();
+Node *parse_expr() {
+	Node *lhs = parse_expr2();
   Token *t = cur_token();
 	while (t->ty == TK_EQ || t->ty == TK_NEQ ||
       t->ty == TK_ST || t->ty == TK_STE ||
       t->ty == TK_GT || t->ty == TK_GTE) {
 		int ty = t->ty;
 		pos++;
-		Node *rhs = expr();
+		Node *rhs = parse_expr2();
 		lhs = new_node(ty, lhs, rhs);
     t = cur_token();
 	}
 	return lhs;
 }
 
-/* expr:  mul expr'
- * expr': eps | "+" expr | "-" expr
+/* parse_expr2:  mul parse_expr2'
+ * parse_expr2': eps | "+" parse_expr2 | "-" parse_expr2
  */
-Node *expr() {
+Node *parse_expr2() {
 	Node *lhs = mul();
   Token *t = cur_token();
 	while (t->ty == '+' || t->ty == '-') {
@@ -271,7 +271,7 @@ Node *expr() {
 	return lhs;
 }
 
-Node *term() {
+Node *parse_term() {
   Token *t = cur_token();
 	if (t->ty == TK_NUM) {
 		Node *n = new_node_num(t->val);
@@ -282,11 +282,11 @@ Node *term() {
 	if (t->ty == TK_IDENT) {
     Token *pt = peek_token();
 
-    // Parsing a call function
+    // Parsing a call parse_function
     if (pt->ty == '(') {
       Node *f = map_get(functions, t->input);
       if (f == NULL) {
-        char str[256]; sprintf(str, "function %s is not found", t->input);
+        char str[256]; sprintf(str, "parse_function %s is not found", t->input);
         error(str);
       }
       Node *n = new_node(ND_CALL_FUNC, NULL, NULL);
@@ -298,7 +298,7 @@ Node *term() {
 
       n->params = new_vector();
       while (t->ty != ')') {
-        Node* p = expr_cmp();
+        Node* p = parse_expr();
         vec_push(n->params, p);
         t = cur_token();
         if (t->ty == ',') {
@@ -320,7 +320,7 @@ Node *term() {
 
 	if (t->ty == '(') {
 		pos++;
-		Node *node = expr_cmp();
+		Node *node = parse_expr();
     t = cur_token();
 		if (t->ty != ')') {
 			char str[256];

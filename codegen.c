@@ -19,7 +19,7 @@ void gen_lval(Node *node) {
   error(str);
 }
 
-int statement_gen(Node* node) {
+int gen_statement(Node* node) {
   if (node->ty == ND_RETURN) {
     gen(node->rhs);
     printf("  pop rax\n");
@@ -66,7 +66,7 @@ int statement_gen(Node* node) {
   return 0;
 }
 
-int function_gen(Node *node) {
+int gen_function(Node *node) {
   if (node->ty != ND_FUNC) {
     return 0;
   }
@@ -93,7 +93,7 @@ int function_gen(Node *node) {
   return 1;
 }
 
-int call_function_gen(Node *node) {
+int gen_call_function(Node *node) {
   if (node->ty != ND_CALL_FUNC) {
     return 0;
   }
@@ -122,13 +122,13 @@ void gen(Node *node) {
     return;
   }
 
-  if (statement_gen(node)) {
+  if (gen_statement(node)) {
     return;
   }
-  if (function_gen(node)) {
+  if (gen_function(node)) {
     return;
   }
-  if (call_function_gen(node)) {
+  if (gen_call_function(node)) {
     return;
   }
 
