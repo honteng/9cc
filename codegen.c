@@ -11,7 +11,14 @@ int while_cnt = 0;
 void gen_lval(Node *node) {
   if (node->ty == ND_IDENT) {
     printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", ('z' - node->long_name[0] + 1) * 8);
+    Map *local_env = (Map*)env->data[env->len-1];
+    int idx = (int)map_get(local_env, node->long_name);
+    if (idx == 0) {
+      char str[256];
+      sprintf(str, "var %s is not found", node->long_name);
+      error(str);
+    }
+    printf("  sub rax, %d\n", idx * 8);
     printf("  push rax\n");
     return;
   }
@@ -85,7 +92,12 @@ int gen_function(Node *node) {
     return 0;
   }
 
-  Map* local_var = new_map();
+  // Make the function environment
+  Map* local_env = new_map();
+  vec_push(env, local_env);
+
+  // start from 1 intentionally to check the var name is valid.
+  int local_var = 1;
 
   printf("%s:\n", node->long_name);
   printf("  push rbp\n");
@@ -96,15 +108,35 @@ int gen_function(Node *node) {
       error("Failed to get param");
     }
     printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", ('z' - p->long_name[0] + 1) * 8); // rax has a pointer to the value
+    map_put(local_env, p->long_name, (void*)local_var);
+    printf("  sub rax, %d\n", (local_var) * 8); // rax has a pointer to the value
     printf("  mov rdi, [rbp + %d]\n", i*8+16); // get the param value from the stack
     printf("  mov [rax], rdi\n"); // set the value to the stack
+    local_var++;
   }
 
   // allocate auto variable area
-  printf("  sub rsp, 26*8\n");
+  for (int i = 0; i < node->code->len; i++) {
+    Node *d = (Node*)(node->code->data[i]);
+    if (d->ty != ND_DECL_VAR) {
+      error("Node is not decl var");
+    }
+    map_put(local_env, d->long_name, (void*)local_var);
+    local_var++;
+  }
 
-  gen(node->rhs);
+  printf("  sub rsp, %d*8\n", local_var);
+
+  node = node->rhs;
+  if (node->ty != ND_BLOCK) {
+    error("Node is not block");
+  }
+  for (int i = 0; i < node->code->len; i++) {
+    Node *n = (Node*)node->code->data[i];
+    gen(n);
+  }
+
+  vec_pop(env);
 
   return 1;
 }

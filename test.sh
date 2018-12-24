@@ -66,10 +66,10 @@ try 10 "a = 10; if (1) 1; else a;"
 try 10 "if (1+1!=2) return 1; else 10;"
 try 1 "3%2;"
 
-try2 2 "hoge(a,b){return b;} main(){return hoge(3,2);}"
-try2 6 "hoge(a,b){return a*b;} main(){return hoge(3,2);}"
+try2 2 "hoge(int a,int b){return b;} main(){return hoge(3,2);}"
+try2 6 "hoge(int aaFD,int b){return aaFD*b;} main(){return hoge(3,2);}"
 try2 24 "
-fact(k){
+fact(int k){
   if (k == 0) {
     return 1;
   } else
@@ -82,11 +82,12 @@ main(){
 
 try2 10 "
 main(){
-  i = 0;
-  while(i < 10) {
-    i = i + 1;
+  int abc;
+  abc = 0;
+  while(abc < 10) {
+    abc = abc + 1;
   }
-  return i;
+  return abc;
 }
 "
 

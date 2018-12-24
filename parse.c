@@ -87,13 +87,39 @@ void program(int simple) {
 	}
 }
 
+Node *parse_decl_var() {
+  // For now, only int is supported
+	Token *t = cur_token();
+  if (t->ty != TK_INT) {
+    return NULL;
+  }
+
+  pos++;
+	t = cur_token();
+  if (t->ty != TK_IDENT) {
+    error("Failed to decl var");
+  }
+
+  Node *n = new_node(ND_DECL_VAR, NULL, NULL);
+  n->long_name = t->input;
+  pos++;
+
+  return n;
+}
+
+/*
+ * long_name: function name
+ * params: parameter nodes
+ * code: var declarations => tentative
+ * rhs: function body
+ */
 Node *parse_function() {
   Node *n = new_node(ND_FUNC, NULL, NULL);
 
 	Token *t = cur_token();
   if (t->ty != TK_IDENT) {
     char str[256];
-    sprintf(str, "%d char 0x%x is not IDENT\n", __LINE__, t->ty);
+    sprintf(str, "%d input %s is not IDENT\n", __LINE__, t->input);
     error(str);
   }
 
@@ -113,8 +139,14 @@ Node *parse_function() {
   t = cur_token();
   n->params = new_vector();
   while (t->ty != ')') {
-    if (t->ty != TK_IDENT) {
+    // For now, just trash the type
+    if (t->ty != TK_INT) {
       error("Failed to parse func params0");
+    }
+    pos++;
+    t = cur_token();
+    if (t->ty != TK_IDENT) {
+      error("Failed to parse func params1");
     }
     vec_push(n->params, new_node_ident(t->input));
     pos++;
@@ -123,18 +155,41 @@ Node *parse_function() {
       pos++;
       t = cur_token();
     } else if(t->ty != ')') {
+      char str[256];
+      sprintf(str, "%d Failed to parse func params2(%s)\n", __LINE__, t->input);
+      error(str);
       error("Failed to parse func params1");
     }
   }
 
-  // Parse func body
   pos++;
   t = cur_token();
   if (t->ty != '{') {
     error("Failed to parse func body0");
   }
-  n->rhs = parse_statement();
+  pos++;
   t = cur_token();
+  // Parse local var decl
+  n->code = new_vector();
+  Node* d = parse_decl_var();
+  while(d != NULL) {
+    vec_push(n->code, d);
+    d = parse_decl_var();
+  }
+
+  // Parse func body
+  Node* block = new_node(ND_BLOCK, NULL, NULL);
+  block->code = new_vector();
+  t = cur_token();
+  while (t->ty != '}') {
+    Node* s = parse_statement();
+    if (s != NULL) {
+      vec_push(block->code, s);
+    }
+    t = cur_token();
+  }
+  pos++;
+  n->rhs = block;
   return n;
 }
 

@@ -39,6 +39,7 @@ enum {
   ND_BLOCK = 512,
   ND_FUNC,
   ND_CALL_FUNC,
+  ND_DECL_VAR,
 };
 
 typedef struct {
@@ -76,6 +77,7 @@ typedef struct {
 
 extern Vector *tokens; // *Token
 extern Vector *code; // *Node
+extern Vector *env; // *Map
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
