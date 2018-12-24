@@ -197,6 +197,11 @@ void gen(Node *node) {
       printf("  mov rdx, 0\n");
       printf("  div rdi\n");
       break;
+    case '%':
+      printf("  mov rdx, 0\n");
+      printf("  div rdi\n");
+      printf("  mov rax, rdx\n");
+      break;
   }
   printf("  push rax\n");
 }

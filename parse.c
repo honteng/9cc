@@ -57,7 +57,7 @@ Node *new_node_ident(char name) {
 Node *parse_mul() {
 	Node *lhs = parse_term();
 	Token *t = cur_token();
-	while (t->ty == '*' || t->ty == '/') {
+	while (t->ty == '*' || t->ty == '/' || t->ty == '%') {
 		int ty = t->ty;
 		pos++;
 		Node *rhs = parse_term();
