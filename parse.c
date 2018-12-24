@@ -22,6 +22,10 @@ Token* cur_token() {
   return (Token*)tokens->data[pos];
 }
 
+Token* peek_token() {
+  return (Token*)tokens->data[pos+1];
+}
+
 void error(char *str) {
 	fprintf(stderr, "%s", str);
 	exit(1);
@@ -92,9 +96,7 @@ Node *function() {
     error(str);
   }
 
-  // FIXME
-  char* s = strndup(t->input, t->input_len);
-  n->long_name = s;
+  n->long_name = t->input;
   map_put(functions, n->long_name, n);
 
   pos++;
@@ -130,13 +132,8 @@ Node *function() {
   if (t->ty != '{') {
     error("Failed to parse func body0");
   }
-  pos++;
   n->rhs = statement();
   t = cur_token();
-  if (t->ty != '}') {
-    error("Failed to parse func body1");
-  }
-  pos++;
   return n;
 }
 
@@ -281,11 +278,46 @@ Node *term() {
 		pos++;
 		return n;
 	}
+
 	if (t->ty == TK_IDENT) {
+    Token *pt = peek_token();
+
+    // Parsing a call function
+    if (pt->ty == '(') {
+      Node *f = map_get(functions, t->input);
+      if (f == NULL) {
+        char str[256]; sprintf(str, "function %s is not found", t->input);
+        error(str);
+      }
+      Node *n = new_node(ND_CALL_FUNC, NULL, NULL);
+      n->long_name = t->input;
+
+      pos++;
+      pos++;
+      t = cur_token();
+
+      n->params = new_vector();
+      while (t->ty != ')') {
+        Node* p = expr_cmp();
+        vec_push(n->params, p);
+        t = cur_token();
+        if (t->ty == ',') {
+          pos++;
+          t = cur_token();
+        } else if(t->ty != ')') {
+          error("Failed to parse func params1");
+        }
+      }
+      pos++;
+      return n;
+    }
+
+    // Refer to a variable
 		Node *n = new_node_ident(*t->input);
 		pos++;
 		return n;
 	}
+
 	if (t->ty == '(') {
 		pos++;
 		Node *node = expr_cmp();

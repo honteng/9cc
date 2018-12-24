@@ -131,7 +131,7 @@ void tokenize(char *p) {
       int l = p - t->input;
       char* s = strndup(t->input, l);
       t->ty = lookup_ident(s);
-      t->input_len = l;
+      t->input = s;
       vec_push(tokens, t);
       continue;
     }

@@ -38,13 +38,13 @@ enum {
 
   ND_BLOCK = 512,
   ND_FUNC,
+  ND_CALL_FUNC,
 };
 
 typedef struct {
   int ty;
   int val;
   char *input;
-  int input_len;
 } Token;
 
 void tokenize(char *p);
