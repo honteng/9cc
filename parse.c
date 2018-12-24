@@ -16,6 +16,7 @@ Node *parse_expr();
 Node *parse_expr2();
 Node *parse_statement();
 Node *parse_if_statement();
+Node *parse_while_statement();
 Node *parse_function();
 
 Token* cur_token() {
@@ -53,7 +54,7 @@ Node *new_node_ident(char name) {
 	return node;
 }
 
-Node *mul() {
+Node *parse_mul() {
 	Node *lhs = parse_term();
 	Token *t = cur_token();
 	while (t->ty == '*' || t->ty == '/') {
@@ -176,9 +177,41 @@ Node *parse_statement() {
   if (t->ty == TK_IF) {
     return parse_if_statement();
   }
+  if (t->ty == TK_WHILE) {
+    return parse_while_statement();
+  }
 
   Node *n = parse_assign();
   return n;
+}
+
+/*
+ * code[0] condition
+ * lhs NULL
+ * rhs block
+ */
+Node *parse_while_statement() {
+  pos++;
+  Node* node = new_node(ND_WHILE, NULL, NULL);
+  node->code = new_vector();
+  Token *t = cur_token();
+  if (t->ty != '(') {
+		char str[256];
+		sprintf(str, "%d char 0x%x is not (\n", __LINE__, t->ty);
+		error(str);
+  }
+  pos++;
+  Node *cmp = parse_expr();
+  vec_push(node->code, cmp);
+  t = cur_token();
+  if (t->ty != ')') {
+		char str[256];
+		sprintf(str, "%d char 0x%x is not )\n", __LINE__, t->ty);
+		error(str);
+  }
+  pos++;
+  node->rhs = parse_statement();
+  return node;
 }
 
 /*
@@ -255,16 +288,16 @@ Node *parse_expr() {
 	return lhs;
 }
 
-/* parse_expr2:  mul parse_expr2'
+/* parse_expr2:  parse_mul parse_expr2'
  * parse_expr2': eps | "+" parse_expr2 | "-" parse_expr2
  */
 Node *parse_expr2() {
-	Node *lhs = mul();
+	Node *lhs = parse_mul();
   Token *t = cur_token();
 	while (t->ty == '+' || t->ty == '-') {
 		int ty = t->ty;
 		pos++;
-		Node *rhs = mul();
+		Node *rhs = parse_mul();
 		lhs = new_node(ty, lhs, rhs);
     t = cur_token();
 	}

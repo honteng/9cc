@@ -1,5 +1,6 @@
 #!/bin/bash
 try() {
+  return;
   expected="$1"
   input="$2"
 
@@ -64,18 +65,29 @@ try 4 "{a=1; b=a+2; return b+1;}"
 try 11 "if (1) 11;"
 try 10 "a = 10; if (1) 1; else a;"
 try 10 "if (1+1!=2) return 1; else 10;"
+
 try2 2 "hoge(a,b){return b;} main(){return hoge(3,2);}"
 try2 6 "hoge(a,b){return a*b;} main(){return hoge(3,2);}"
-try2 6 "
+try2 24 "
 fact(k){
-  if (k == 0)
+  if (k == 0) {
     return 1;
-  else
+  } else
     return k*fact(k-1);
 }
 
 main(){
-  return fact(3);
+  return fact(4);
 }"
+
+try2 10 "
+main(){
+  i = 0;
+  while(i < 10) {
+    i = i + 1;
+  }
+  return i;
+}
+"
 
 echo OK

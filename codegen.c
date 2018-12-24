@@ -6,6 +6,7 @@
 #include "9cc.h"
 
 int if_cnt = 0;
+int while_cnt = 0;
 
 void gen_lval(Node *node) {
   if (node->ty == ND_IDENT) {
@@ -50,6 +51,19 @@ int gen_statement(Node* node) {
     }
     printf("ENDIF%d:\n", if_cnt);
     if_cnt++;
+    return 1;
+  }
+
+  if (node->ty == ND_WHILE) {
+    printf("WHILE%d:\n", while_cnt);
+    gen((Node*)(node->code->data[0]));
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je ENDWHILE%d\n", if_cnt);
+    gen(node->rhs);
+    printf("  jmp WHILE%d\n", if_cnt);
+    printf("ENDWHILE%d:\n", if_cnt);
+    while_cnt++;
     return 1;
   }
 
@@ -132,7 +146,6 @@ void gen(Node *node) {
   if (gen_call_function(node)) {
     return;
   }
-
 
   gen(node->lhs);
   gen(node->rhs);
