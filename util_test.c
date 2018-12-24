@@ -25,6 +25,9 @@ void test_vector() {
   expect(__LINE__, 50, (int)vec->data[50]);
   expect(__LINE__, 99, (int)vec->data[99]);
 
+  int v = (int)vec_pop(vec);
+  expect(__LINE__, 99, v);
+  expect(__LINE__, 99, vec->len);
 }
 
 void test_map() {
