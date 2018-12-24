@@ -65,7 +65,6 @@ typedef struct Node {
   struct Node *lhs;
   struct Node *rhs;
   int val; // used when ty == ND_NUM
-  char name; // used when ty == ND_IDENT
 } Node;
 
 void gen(Node *node);

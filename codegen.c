@@ -11,7 +11,7 @@ int while_cnt = 0;
 void gen_lval(Node *node) {
   if (node->ty == ND_IDENT) {
     printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", ('z' - node->name + 1) * 8);
+    printf("  sub rax, %d\n", ('z' - node->long_name[0] + 1) * 8);
     printf("  push rax\n");
     return;
   }
@@ -85,6 +85,8 @@ int gen_function(Node *node) {
     return 0;
   }
 
+  Map* local_var = new_map();
+
   printf("%s:\n", node->long_name);
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n"); // rbp has caller stack pointer
@@ -94,7 +96,7 @@ int gen_function(Node *node) {
       error("Failed to get param");
     }
     printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", ('z' - p->name + 1) * 8); // rax has a pointer to the value
+    printf("  sub rax, %d\n", ('z' - p->long_name[0] + 1) * 8); // rax has a pointer to the value
     printf("  mov rdi, [rbp + %d]\n", i*8+16); // get the param value from the stack
     printf("  mov [rax], rdi\n"); // set the value to the stack
   }

@@ -47,10 +47,10 @@ Node *new_node_num(int val) {
 	return node;
 }
 
-Node *new_node_ident(char name) {
+Node *new_node_ident(char* name) {
 	Node *node = malloc(sizeof(Node));
 	node->ty = ND_IDENT;
-	node->name = name;
+	node->long_name = name;
 	return node;
 }
 
@@ -116,7 +116,7 @@ Node *parse_function() {
     if (t->ty != TK_IDENT) {
       error("Failed to parse func params0");
     }
-    vec_push(n->params, new_node_ident(*t->input));
+    vec_push(n->params, new_node_ident(t->input));
     pos++;
     t = cur_token();
     if (t->ty == ',') {
@@ -346,7 +346,7 @@ Node *parse_term() {
     }
 
     // Refer to a variable
-		Node *n = new_node_ident(*t->input);
+		Node *n = new_node_ident(t->input);
 		pos++;
 		return n;
 	}
