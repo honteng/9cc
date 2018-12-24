@@ -103,6 +103,7 @@ int gen_call_function(Node *node) {
     gen(p);
   }
   printf("  call %s\n", node->long_name);
+  printf("  add rsp, %d\n", 8 * node->params->len);
   printf("  push rax\n");
 
   return 1;
